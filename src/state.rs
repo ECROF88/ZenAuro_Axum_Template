@@ -2,7 +2,6 @@ use anyhow::Context;
 use deadpool_redis::{Config, Pool, redis::AsyncCommands};
 use tracing::{debug, info, instrument};
 
-use crate::config::AppConfig;
 
 #[derive(Clone)]
 pub struct AppState {

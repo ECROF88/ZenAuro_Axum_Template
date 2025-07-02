@@ -8,6 +8,7 @@ pub struct AppConfig {
     pub jwt_secret: String,
     pub database_url: String,
     pub redis_url: String,
+    pub expiration_seconds:u64
 }
 
 impl AppConfig {
@@ -28,6 +29,11 @@ impl AppConfig {
 
             redis_url: std::env::var("REDIS_URL")
                 .context("REDIS_URL environment variable not set")?,
+
+            expiration_seconds: std::env::var("EXPIRATION_SECONDS")
+                .context("EXPIRATION_SECONDS environment variable not set")?
+                .parse()
+                .context("Invalid EXPIRATION_SECONDS format")?
         };
 
         Ok(config)

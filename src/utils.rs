@@ -1,11 +1,19 @@
-use std::sync::OnceLock;
-
+use std::sync::{LazyLock, OnceLock};
+pub mod claims;
+pub mod jwt;
+use jwt::JwtService;
 use tracing_subscriber::fmt;
 
 use crate::config::AppConfig;
 static TRACING: OnceLock<()> = OnceLock::new();
-
-pub fn init_tracing() {
+static JWT_SERVICE: LazyLock<JwtService> = LazyLock::new(|| {
+    let config = tokio::runtime::Handle::current()
+        .block_on(load_config())
+        .expect("Failed to load config");
+    
+    JwtService::new(&config.jwt_secret, config.expiration_seconds)
+});
+pub async fn init() -> anyhow::Result<()> {
     TRACING.get_or_init(|| {
         tracing_subscriber::fmt()
             .with_max_level(tracing::Level::DEBUG)
@@ -17,9 +25,16 @@ pub fn init_tracing() {
             // .pretty()
             .init();
     });
+
+    Ok(())
 }
 
 pub async fn load_config() -> anyhow::Result<AppConfig> {
     let app_config = AppConfig::load()?;
     Ok(app_config)
+}
+
+
+pub fn get_jwt_service() -> &'static JwtService {
+    &JWT_SERVICE
 }

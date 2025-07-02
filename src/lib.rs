@@ -1,8 +1,8 @@
-use tracing::{ info};
+use tracing::info;
 
 use crate::{
- errors::AppError, router::create_router,
-    state::AppState, utils::load_config,
+    errors::AppError, router::create_router, state::AppState,
+    utils::load_config,
 };
 
 pub mod config;

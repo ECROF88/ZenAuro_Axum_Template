@@ -23,6 +23,15 @@ pub enum AppError {
 
     #[error("Internal server error")]
     Internal(#[from] anyhow::Error),
+
+    #[error("Token validation error")]
+    JWTValidationError(#[from] jsonwebtoken::errors::Error),
+
+    #[error("Unauthorized error")]
+    Unauthorized,
+
+    #[error("Unauthorized: {message}")]
+    UnauthorizedWithMessage { message: String },
 }
 
 impl IntoResponse for AppError {
@@ -39,7 +48,19 @@ impl IntoResponse for AppError {
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Something went wrong".into(),
             ),
-            AppError::IO(error) => todo!(),
+            AppError::IO(error) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("I/O error: {}", error),
+            ),
+            AppError::JWTValidationError(_) => {
+                (StatusCode::UNAUTHORIZED, "jwt validation error".to_string())
+            },
+            AppError::UnauthorizedWithMessage { message } => {
+                (StatusCode::UNAUTHORIZED, message.clone())
+            },
+            AppError::Unauthorized => {
+                (StatusCode::UNAUTHORIZED, "Unauthorized".to_string())
+            }
         };
         let body = Json(json!({ "error": msg }));
         (status, body).into_response()
