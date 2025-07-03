@@ -4,12 +4,13 @@ use axum::{
     middleware::from_fn_with_state, routing::{get, post}, Router
 };
 
-pub fn auth_router(state:AppState) -> Router {
+pub fn auth_router() -> Router<AppState> {
     // Create a router for authentication routes
     let auth_routes = Router::new()
-        .route("/login", post(login))
+        .route("/login", post(login));
         // .layer(from_fn_with_state(state, f))
-        .with_state(state);
+        // .with_state(state);
 
     auth_routes
 }
+

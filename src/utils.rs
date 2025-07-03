@@ -5,13 +5,23 @@ use jwt::JwtService;
 use tracing_subscriber::fmt;
 
 use crate::config::AppConfig;
+// 我认为无状态的东西应该用这个
 static TRACING: OnceLock<()> = OnceLock::new();
-static JWT_SERVICE: LazyLock<JwtService> = LazyLock::new(|| {
-    let config = tokio::runtime::Handle::current()
-        .block_on(load_config())
-        .expect("Failed to load config");
-    
-    JwtService::new(&config.jwt_secret, config.expiration_seconds)
+// static JWT_SERVICE: LazyLock<JwtService> = LazyLock::new(|| {
+//     let config = load_config().expect("Failed to load config");
+
+//     JwtService::new(&config.jwt_secret, config.expiration_seconds)
+// });
+
+pub static ENV_CONFIG: LazyLock<AppConfig> = LazyLock::new(|| {
+    let config = load_config().expect("Failed to load config");
+    AppConfig {
+        port: config.port,
+        jwt_secret: config.jwt_secret,
+        database_url: config.database_url,
+        redis_url: config.redis_url,
+        expiration_seconds: config.expiration_seconds,
+    }
 });
 pub async fn init() -> anyhow::Result<()> {
     TRACING.get_or_init(|| {
@@ -29,12 +39,12 @@ pub async fn init() -> anyhow::Result<()> {
     Ok(())
 }
 
-pub async fn load_config() -> anyhow::Result<AppConfig> {
+pub fn load_config() -> anyhow::Result<AppConfig> {
     let app_config = AppConfig::load()?;
     Ok(app_config)
+    // Config)
 }
 
-
-pub fn get_jwt_service() -> &'static JwtService {
-    &JWT_SERVICE
-}
+// pub fn get_jwt_service() -> &'static JwtService {
+//     &JWT_SERVICE
+// }
