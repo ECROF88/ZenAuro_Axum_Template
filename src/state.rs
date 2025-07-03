@@ -21,9 +21,10 @@ impl AppState {
         let redis_cfg = Config::from_url(&ENV_CONFIG.redis_url);
         let redis =
             redis_cfg.create_pool(Some(deadpool_redis::Runtime::Tokio1))?;
+
         debug!("Creating JWT service");
-        let jwt_service = JwtService::new(jwt_secret, expiration_seconds);
-        // let jwt_service = Arc::new(jwt_service);
+        let jwt_service = JwtService::new(jwt_secret, expiration_seconds)?;
+        
         debug!("Testing Redis connection");
         let mut conn = redis
             .get()

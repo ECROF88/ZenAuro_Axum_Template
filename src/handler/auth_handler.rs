@@ -22,8 +22,5 @@ pub async fn show_token(
     State(jwt_service): State<JwtService>,
     // claims: Claims,
 ) -> Result<String, AppError> {
-    // println!("{:?}",state.jwt_service);
-    println!("sec:{}",jwt_service.expiration_seconds);
-    // Ok(claims.sub)
-    Ok("value".to_string())
+    todo!()
 }

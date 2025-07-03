@@ -13,13 +13,15 @@ use crate::{
     utils::claims::{Claims, UserRole},
 };
 
+
 #[derive(Clone)]
 pub struct JwtService {
-    encoding_key: EncodingKey,
-    decoding_key: DecodingKey,
-    validation: Validation,
-    pub expiration_seconds: u64,
+    encoding_key: Arc<EncodingKey>,
+    decoding_key: Arc<DecodingKey>,
+    validation: Arc<Validation>,
+    expiration_seconds: u64,
 }
+
 impl fmt::Debug for JwtService {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("JwtService")
@@ -36,17 +38,17 @@ impl FromRef<AppState> for JwtService {
     }
 }
 impl JwtService {
-    pub fn new(secret: &str, expiration_seconds: u64) -> Self {
-        let encoding_key = EncodingKey::from_secret(secret.as_bytes());
-        let decoding_key = DecodingKey::from_secret(secret.as_bytes());
-        let validation = Validation::new(jsonwebtoken::Algorithm::HS256);
+    pub fn new(secret: &str, expiration_seconds: u64) -> anyhow::Result<Self> {
+        let encoding_key = Arc::new(EncodingKey::from_secret(secret.as_bytes()));
+        let decoding_key = Arc::new(DecodingKey::from_secret(secret.as_bytes()));
+        let validation = Arc::new(Validation::new(jsonwebtoken::Algorithm::HS256));
 
-        Self {
+        Ok(Self {
             encoding_key,
             decoding_key,
             validation,
             expiration_seconds,
-        }
+        })
     }
 
     pub fn generate_token(
